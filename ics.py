@@ -23,7 +23,8 @@ class VisionItem(object):
 		'category',
 		'department',
 		'subdepartment',
-		'vendor_name'
+		'vendor_name',
+		'notes'
 	]
 	def __init__(self, **kwargs):
 		for slot in self.__slots__:
@@ -128,11 +129,13 @@ class VisionDB(object):
 				sub_department.description as subdepartment,
 				department.description as department,
 				department_group.name1 as category,
-				pri_vndr as vendor_name
+				pri_vndr as vendor_name,
+				item_extra.notes as notes
 			FROM item
 				join sub_department on (item.deptsubdept = sub_department.deptsubdept)
 				join department on (sub_department.dept = department.dept)
 				join department_group on (department.dept_cat = department_group.dept_group )
+				left outer join item_extra on (item.item_num = item_extra.item_num)
 			WHERE (deleted_flag = 'N' OR $1 = true)
 		"""
 		get_items = self.prep_query("get_items", query)
@@ -146,7 +149,8 @@ class VisionDB(object):
 				category = i["category"],
 				department = i["department"],
 				subdepartment = i["subdepartment"],
-				vendor_name = i["vendor_name"]
+				vendor_name = i["vendor_name"],
+				notes = i["notes"]
 			)
 			ret.append(item)
 		return ret
