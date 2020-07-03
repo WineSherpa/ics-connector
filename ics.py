@@ -160,7 +160,7 @@ class VisionDB(object):
 		start_clause = "and the_time::date >= '"+start+"'::date" if start is not None else ""
 		end_clause = "and the_time::date <= '"+end+"'::date" if end is not None else ""
 		on_clause = "and the_time::date = '"+on+"'::date" if on is not None else ""
-		query = f"""
+		select = f"""
 			select
 				unique_id,
 				item_num,
@@ -171,7 +171,12 @@ class VisionDB(object):
 				isfm_id as transaction_id,
 				num_units,
 				(statetax+countytax+citytax) as tax
-			from items_sold_final
+			from items_sold_final"""
+		select_count = f"""
+			select
+				count(*)
+			from items_sold_final"""
+		where = f"""
 			where
 				void_item_flag != 'Y'
 				and void_sale_flag != 'Y'
@@ -180,7 +185,13 @@ class VisionDB(object):
 				{end_clause}
 				{on_clause}
 			order by isfm_id desc;"""
-		get_transaction_lines = self.prep_query("get_transaction_lines", query)
+		
+		query = select + where
+		count_query = select_count + where
+		# get_transaction_lines = self.prep_query("get_transaction_lines", query)
+		transaction_lines_count = self.db.prepare(count_query)()
+		
+		get_transaction_lines = self.db.prepare(query)
 
 		def unwind(lists):
 			for l in lists:
