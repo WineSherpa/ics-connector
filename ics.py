@@ -184,12 +184,13 @@ class VisionDB(object):
 				{start_clause}
 				{end_clause}
 				{on_clause}
-			order by isfm_id desc;"""
+			"""
+		where_order = """ order by isfm_id desc """
 		
-		query = select + where
-		count_query = select_count + where
+		query = select + where + where_order + ';'
+		count_query = select_count + where + ';'
 		# get_transaction_lines = self.prep_query("get_transaction_lines", query)
-		transaction_lines_count = self.db.prepare(count_query)()
+		transaction_lines_count = self.db.prepare(count_query)()[0][0]
 		
 		get_transaction_lines = self.db.prepare(query)
 
@@ -244,7 +245,7 @@ class VisionDB(object):
 				yield VisionTransaction(transaction_id, transaction_timestamp, lines)
 				lines = []
 
-		return transactions(transaction_lines_group(transaction_lines))
+		return {'transactions': transactions(transaction_lines_group(transaction_lines)), 'count':transaction_lines_count}
 
 
 if __name__ == "__main__":
