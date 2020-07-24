@@ -20,6 +20,7 @@ class VisionItem(object):
 	__slots__ = [
 		'id',
 		'descr',
+		'price',
 		'category',
 		'department',
 		'subdepartment',
@@ -101,6 +102,7 @@ class VisionDB(object):
 			SELECT 
 				item.item_num,
 				item.descr,
+				item.unit_price,
 				sub_department.description as subdepartment,
 				department.description as department,
 				department_group.name1 as category
@@ -122,10 +124,19 @@ class VisionDB(object):
 		return item
 	
 	def getItems(self, deleted=False):
+		count_query = """
+			SELECT 
+				count(distinct item.item_num) as count
+			FROM item
+			WHERE (deleted_flag = 'N' OR $1 = true)
+		"""
+		count_items = self.prep_query("count_items", count_query)
+		count = count_items(deleted)[0]["count"]
 		query = """
 			SELECT 
 				item.item_num,
 				item.descr,
+				item.unit_price,
 				sub_department.description as subdepartment,
 				department.description as department,
 				department_group.name1 as category,
@@ -146,6 +157,7 @@ class VisionDB(object):
 			item = VisionItem(
 				id = i["item_num"],
 				descr = i["descr"],
+				price = i["unit_price"],
 				category = i["category"],
 				department = i["department"],
 				subdepartment = i["subdepartment"],
@@ -153,7 +165,7 @@ class VisionDB(object):
 				notes = i["notes"]
 			)
 			ret.append(item)
-		return ret
+		return ret, count
 
 
 	def getTransactions(self, start=None, end=None, on=None):
