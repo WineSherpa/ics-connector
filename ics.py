@@ -25,8 +25,14 @@ class VisionItem(object):
 		'department',
 		'subdepartment',
 		'vendor_name',
-		'notes'
+		'notes',
+		'special_rating',
+		'parker_rating',
+		'other_rating',
+		'wine_condition',
+		'item_class',
 	]
+
 	def __init__(self, **kwargs):
 		for slot in self.__slots__:
 			if slot not in kwargs:
@@ -141,7 +147,12 @@ class VisionDB(object):
 				department.description as department,
 				department_group.name1 as category,
 				pri_vndr as vendor_name,
-				item_extra.notes as notes
+				item_extra.notes as notes,
+				item_extra.special_rating as special_rating,
+				item_extra.parker_rating as parker_rating,
+				item_extra.other_rating as other_rating,
+				item_extra.wine_condition as wine_condition,
+				item_extra.class as class
 			FROM item
 				join sub_department on (item.deptsubdept = sub_department.deptsubdept)
 				join department on (sub_department.dept = department.dept)
@@ -162,8 +173,19 @@ class VisionDB(object):
 				department = i["department"],
 				subdepartment = i["subdepartment"],
 				vendor_name = i["vendor_name"],
-				notes = i["notes"]
+				notes = i["notes"],
+				special_rating = i["special_rating"],
+				parker_rating = i["parker_rating"],
+				other_rating = i["other_rating"],
+				wine_condition = i["wine_condition"],
+				item_class = i["class"]
 			)
+			# special_rating -> organic
+			# parker_rating -> biodynamic
+			# other_rating -> natural
+			# wine_condition -> orange
+			# class -> kosher
+
 			ret.append(item)
 		return ret, count
 
